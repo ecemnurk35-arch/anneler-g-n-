@@ -1,0 +1,23 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #fbc2eb 0%, #a6c1ee 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.message {
+    position: absolute;
+    text-align: center;
+    z-index: 10;
+    color: white;
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    pointer-events: none; /* Çiçeklere tıklamayı engellemesin */
+}
+
+canvas {
+    display: block;
+}
