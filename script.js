@@ -10,7 +10,6 @@ resize();
 window.addEventListener('resize', resize);
 
 function drawBg() {
-    // Koyu, derin arka plan
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0,   '#0a0010');
     g.addColorStop(0.5, '#0d0018');
@@ -19,187 +18,179 @@ function drawBg() {
     ctx.fillRect(0, 0, W, H);
 }
 
-// ----------- ZEMİN OTU / YAPRAKLARI -----------
+// ----------- ZEMİN OTU -----------
 class Grass {
     constructor(x) {
         this.x = x;
-        this.baseY = H;
-        this.height = Math.random() * 80 + 60;
-        this.lean = (Math.random() - 0.5) * 0.6;
-        this.width = Math.random() * 5 + 3;
+        this.height = Math.random() * 80 + 50;
+        this.lean = (Math.random() - 0.5) * 0.5;
+        this.width = Math.random() * 4 + 2;
         this.phase = Math.random() * Math.PI * 2;
         this.speed = Math.random() * 0.01 + 0.005;
         this.color = Math.random() < 0.5
-            ? { r: 180, g: 0,  b: 80  }
-            : { r: 80,  g: 0,  b: 160 };
+            ? { r: 160, g: 0, b: 70 }
+            : { r: 70,  g: 0, b: 140 };
     }
     draw(t) {
-        const sway = Math.sin(t * this.speed + this.phase) * 8;
+        const sway = Math.sin(t * this.speed + this.phase) * 7;
         const tipX = this.x + sway + this.lean * this.height;
-        const tipY = this.baseY - this.height;
-
+        const tipY = H - this.height;
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(this.x, this.baseY);
+        ctx.moveTo(this.x, H);
         ctx.quadraticCurveTo(
             this.x + sway * 0.5 + this.lean * this.height * 0.5,
-            this.baseY - this.height * 0.5,
+            H - this.height * 0.5,
             tipX, tipY
         );
-
         const { r, g, b } = this.color;
-        const grad = ctx.createLinearGradient(this.x, this.baseY, tipX, tipY);
-        grad.addColorStop(0,   `rgba(${r},${g},${b},0.9)`);
-        grad.addColorStop(0.6, `rgba(${r},${g},${b},0.7)`);
-        grad.addColorStop(1,   `rgba(${r},${g},${b},0.2)`);
-
+        const grad = ctx.createLinearGradient(this.x, H, tipX, tipY);
+        grad.addColorStop(0, `rgba(${r},${g},${b},0.9)`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0.1)`);
         ctx.strokeStyle = grad;
         ctx.lineWidth = this.width;
         ctx.lineCap = 'round';
         ctx.stroke();
-
-        // Parlak kenar
-        ctx.globalAlpha = 0.4;
-        ctx.strokeStyle = `rgba(255,${g+100},${b+100},0.5)`;
-        ctx.lineWidth = 1;
+        // parlak kenar
+        ctx.globalAlpha = 0.35;
+        ctx.strokeStyle = `rgba(255,${g + 80},${b + 80},0.5)`;
+        ctx.lineWidth = 0.7;
         ctx.stroke();
-
         ctx.restore();
     }
 }
 
-// ----------- ÇİÇEKLER (Uzun saplı, parlak kenarlı) -----------
+// ----------- GERÇEK ÇİÇEK (Referansa uygun: yuvarlak yapraklar, belirgin merkez) -----------
 const FLOWER_COLORS = [
-    { petal: '#cc0055', glow: '#ff3399', center: '#ff99cc' },
-    { petal: '#8800cc', glow: '#cc44ff', center: '#ffccff' },
-    { petal: '#dd0044', glow: '#ff2277', center: '#ffaacc' },
-    { petal: '#6600bb', glow: '#aa33ff', center: '#ddaaff' },
-    { petal: '#ff0066', glow: '#ff66aa', center: '#ffe0f0' },
+    { petal: '#cc0055', glow: '#ff3399', center: '#ffccdd' },
+    { petal: '#8800bb', glow: '#bb44ff', center: '#eeccff' },
+    { petal: '#dd0044', glow: '#ff2277', center: '#ffaabb' },
+    { petal: '#6600aa', glow: '#9933ff', center: '#ddaaff' },
+    { petal: '#ee0077', glow: '#ff55bb', center: '#ffd0e8' },
 ];
 
 class TallFlower {
     constructor(x, isClick = false) {
         this.x = x;
-        this.baseY = H;
         this.isClick = isClick;
         this.stemHeight = isClick
-            ? Math.random() * 60 + 120
-            : Math.random() * 80 + 80;
+            ? Math.random() * 70 + 130
+            : Math.random() * 90 + 80;
         this.petalSize = isClick
-            ? Math.random() * 12 + 18
-            : Math.random() * 10 + 12;
+            ? Math.random() * 14 + 20
+            : Math.random() * 10 + 13;
         this.col = FLOWER_COLORS[Math.floor(Math.random() * FLOWER_COLORS.length)];
-        this.petals = Math.floor(Math.random() * 2) + 5;
+        this.petalCount = Math.floor(Math.random() * 2) + 5; // 5 veya 6
         this.phase = Math.random() * Math.PI * 2;
-        this.speed = Math.random() * 0.008 + 0.004;
-        this.lean = (Math.random() - 0.5) * 0.3;
+        this.swaySpeed = Math.random() * 0.008 + 0.004;
+        this.lean = (Math.random() - 0.5) * 0.25;
         this.life = 0;
-        this.maxLife = isClick ? 600 : 900 + Math.random() * 300;
-        this.size = 0;
-        this.growSpeed = isClick ? 2 : 0.8;
+        this.maxLife = isClick ? 500 : 800 + Math.random() * 400;
+        this.grown = 0; // 0..1
+        this.growSpeed = isClick ? 0.025 : 0.01;
         this.glowPulse = 0;
+        this.rotOffset = Math.random() * Math.PI * 2;
     }
 
     draw(t) {
-        if (this.size < 1) this.size += this.growSpeed / this.stemHeight;
+        this.grown = Math.min(1, this.grown + this.growSpeed);
         this.life++;
-        this.glowPulse = (Math.sin(t * 0.03 + this.phase) + 1) / 2;
+        this.glowPulse = (Math.sin(t * 0.04 + this.phase) + 1) / 2;
 
         const fade = this.life > this.maxLife - 80
             ? Math.max(0, 1 - (this.life - (this.maxLife - 80)) / 80)
             : 1;
 
-        const sway = Math.sin(t * this.speed + this.phase) * 6;
-        const stemSize = this.size;
-        const tipX = this.x + sway + this.lean * this.stemHeight;
-        const tipY = this.baseY - this.stemHeight * stemSize;
-        const midX = this.x + sway * 0.5 + this.lean * this.stemHeight * 0.5;
-        const midY = this.baseY - this.stemHeight * stemSize * 0.5;
+        const sway = Math.sin(t * this.swaySpeed + this.phase) * 6;
+        const sh = this.stemHeight * this.grown;
+        const tipX = this.x + sway + this.lean * sh;
+        const tipY = H - sh;
+        const midX = this.x + sway * 0.5 + this.lean * sh * 0.5;
+        const midY = H - sh * 0.5;
 
         ctx.save();
         ctx.globalAlpha = fade;
 
-        // Sap
-        const stemGrad = ctx.createLinearGradient(this.x, this.baseY, tipX, tipY);
+        // --- SAP ---
+        const stemGrad = ctx.createLinearGradient(this.x, H, tipX, tipY);
         stemGrad.addColorStop(0, this.col.petal + 'cc');
-        stemGrad.addColorStop(1, this.col.petal + '44');
+        stemGrad.addColorStop(1, this.col.petal + '33');
         ctx.strokeStyle = stemGrad;
         ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(this.x, this.baseY);
+        ctx.moveTo(this.x, H);
         ctx.quadraticCurveTo(midX, midY, tipX, tipY);
         ctx.stroke();
 
-        // Sap parlak kenar
-        ctx.globalAlpha = fade * 0.5;
+        // sap glow
+        ctx.globalAlpha = fade * 0.4;
         ctx.strokeStyle = this.col.glow;
         ctx.lineWidth = 0.8;
         ctx.stroke();
         ctx.globalAlpha = fade;
 
-        if (stemSize >= 1) {
-            // Çiçek başı - sadece sap tam büyüyünce
+        // --- ÇİÇEK BAŞI (sadece büyüyünce) ---
+        if (this.grown > 0.85) {
+            const flowerAlpha = (this.grown - 0.85) / 0.15;
+            ctx.globalAlpha = fade * flowerAlpha;
             ctx.translate(tipX, tipY);
 
             const ps = this.petalSize;
-            const n  = this.petals;
+            const n  = this.petalCount;
 
-            // Dış glow halkası
-            const glowSize = ps * (1.8 + this.glowPulse * 0.4);
-            const glowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, glowSize);
-            glowGrad.addColorStop(0,   this.col.glow + '55');
-            glowGrad.addColorStop(0.5, this.col.glow + '22');
-            glowGrad.addColorStop(1,   'rgba(0,0,0,0)');
-            ctx.fillStyle = glowGrad;
-            ctx.beginPath(); ctx.arc(0, 0, glowSize, 0, Math.PI * 2); ctx.fill();
+            // Dış glow
+            const glowR = ps * (1.6 + this.glowPulse * 0.3);
+            const glowG = ctx.createRadialGradient(0, 0, 0, 0, 0, glowR);
+            glowG.addColorStop(0,   this.col.glow + '44');
+            glowG.addColorStop(0.5, this.col.glow + '18');
+            glowG.addColorStop(1,   'rgba(0,0,0,0)');
+            ctx.fillStyle = glowG;
+            ctx.beginPath(); ctx.arc(0, 0, glowR, 0, Math.PI * 2); ctx.fill();
 
-            // Yapraklar
+            // YAPRAKLAR — yuvarlak uçlu elips (referanstaki gibi)
             for (let i = 0; i < n; i++) {
-                const ang = (Math.PI * 2 / n) * i + t * 0.001;
+                const ang = (Math.PI * 2 / n) * i + this.rotOffset;
                 ctx.save();
                 ctx.rotate(ang);
-                ctx.beginPath();
-                ctx.moveTo(0, 0);
-                ctx.bezierCurveTo(
-                     ps * 0.5, -ps * 0.3,
-                     ps * 0.5,  ps * 0.3,
-                     0, 0
-                );
-                ctx.bezierCurveTo(
-                     ps * 0.9, -ps * 0.5,
-                     ps * 0.9,  ps * 0.5,
-                     0, ps
-                );
-                ctx.closePath();
 
-                // Yaprak gradient (koyu içten parlağa)
-                const pg = ctx.createLinearGradient(0, 0, 0, ps);
+                // Her yaprak: merkeze yakın dar, uca doğru yuvarlak elips
+                ctx.beginPath();
+                ctx.ellipse(
+                    0, -ps * 0.65,   // merkez noktası (yukarı kaydır)
+                    ps * 0.38,        // x yarıçap (genişlik)
+                    ps * 0.65,        // y yarıçap (uzunluk)
+                    0, 0, Math.PI * 2
+                );
+
+                // Yaprak gradient: içten dışa
+                const pg = ctx.createRadialGradient(0, -ps * 0.4, 0, 0, -ps * 0.65, ps * 0.7);
                 pg.addColorStop(0,   this.col.center);
-                pg.addColorStop(0.4, this.col.petal);
-                pg.addColorStop(1,   this.col.petal + '88');
+                pg.addColorStop(0.5, this.col.petal);
+                pg.addColorStop(1,   this.col.petal + '99');
                 ctx.fillStyle = pg;
                 ctx.fill();
 
-                // Parlak kenar
+                // Parlak kenar çizgisi
                 ctx.strokeStyle = this.col.glow;
-                ctx.lineWidth = 0.8;
-                ctx.globalAlpha = fade * (0.6 + this.glowPulse * 0.4);
+                ctx.lineWidth = 0.9;
+                ctx.globalAlpha = fade * flowerAlpha * (0.5 + this.glowPulse * 0.5);
                 ctx.stroke();
+
                 ctx.restore();
             }
 
-            // Merkez
-            const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, ps * 0.35);
-            cg.addColorStop(0, '#fff');
-            cg.addColorStop(0.5, this.col.center);
-            cg.addColorStop(1, this.col.petal);
-            ctx.globalAlpha = fade;
-            ctx.beginPath(); ctx.arc(0, 0, ps * 0.35, 0, Math.PI * 2);
+            // MERKEZ
+            ctx.globalAlpha = fade * flowerAlpha;
+            const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, ps * 0.32);
+            cg.addColorStop(0,   '#ffffff');
+            cg.addColorStop(0.4, this.col.center);
+            cg.addColorStop(1,   this.col.petal);
+            ctx.beginPath(); ctx.arc(0, 0, ps * 0.32, 0, Math.PI * 2);
             ctx.fillStyle = cg; ctx.fill();
             ctx.strokeStyle = this.col.glow;
             ctx.lineWidth = 1;
-            ctx.globalAlpha = fade * 0.8;
+            ctx.globalAlpha = fade * flowerAlpha * 0.7;
             ctx.stroke();
         }
 
@@ -207,6 +198,136 @@ class TallFlower {
     }
 
     get dead() { return this.life > this.maxLife; }
+}
+
+// ----------- SARMAŞIK (yukarıdan aşağı iner, üstünde küçük çiçekler) -----------
+const IVY_COLORS = [
+    { stem: '#440022', leaf: '#660033', flower: '#ff66aa', fCenter: '#ffddee' },
+    { stem: '#330044', leaf: '#550055', flower: '#cc44ff', fCenter: '#eeccff' },
+    { stem: '#3a0015', leaf: '#5a0025', flower: '#ff3388', fCenter: '#ffbbdd' },
+];
+
+class Ivy {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * W;
+        this.col = IVY_COLORS[Math.floor(Math.random() * IVY_COLORS.length)];
+        this.segments = [];
+        this.maxLen = Math.random() * 180 + 120;
+        this.curLen = 0;
+        this.growSpeed = Math.random() * 0.6 + 0.3;
+        this.phase = Math.random() * Math.PI * 2;
+        this.swayAmp = Math.random() * 18 + 10;
+        this.swaySpeed = Math.random() * 0.008 + 0.003;
+        this.life = 0;
+        this.maxLife = 700 + Math.random() * 400;
+        this.segLen = 12;
+        this.built = false;
+        // Sarmaşık yolunu önceden hesapla
+        this.buildPath();
+    }
+    buildPath() {
+        this.points = [];
+        let cx = this.x, cy = 0;
+        const steps = Math.ceil(this.maxLen / this.segLen);
+        for (let i = 0; i <= steps; i++) {
+            const wave = Math.sin(i * 0.4 + this.phase) * this.swayAmp;
+            cx = this.x + wave;
+            cy = i * this.segLen;
+            this.points.push({ x: cx, y: cy });
+        }
+        // Her 3 segmentte bir yaprak/çiçek
+        this.decorations = [];
+        for (let i = 2; i < this.points.length; i += 3) {
+            const side = i % 2 === 0 ? 1 : -1;
+            const isFlower = Math.random() < 0.35;
+            this.decorations.push({ idx: i, side, isFlower });
+        }
+    }
+    draw(t) {
+        this.life++;
+        if (this.curLen < this.maxLen) this.curLen += this.growSpeed;
+
+        const fade = this.life > this.maxLife - 100
+            ? Math.max(0, 1 - (this.life - (this.maxLife - 100)) / 100)
+            : 1;
+
+        const visiblePts = Math.floor((this.curLen / this.maxLen) * this.points.length);
+        if (visiblePts < 2) return;
+
+        ctx.save();
+        ctx.globalAlpha = fade;
+
+        // Sway animasyonu için offset
+        const swayOff = Math.sin(t * this.swaySpeed + this.phase) * 4;
+
+        // --- SARI DALLAR ---
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x + swayOff, this.points[0].y);
+        for (let i = 1; i < visiblePts; i++) {
+            ctx.lineTo(this.points[i].x + swayOff, this.points[i].y);
+        }
+        ctx.strokeStyle = this.col.stem;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+
+        // Parlak kenar
+        ctx.strokeStyle = this.col.flower + '55';
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+
+        // --- YAPRAKLAR & ÇİÇEKLER ---
+        for (const dec of this.decorations) {
+            if (dec.idx >= visiblePts) break;
+            const p = this.points[dec.idx];
+            const px = p.x + swayOff;
+            const py = p.y;
+
+            ctx.save();
+            ctx.translate(px, py);
+
+            if (dec.isFlower) {
+                // Küçük çiçek
+                const ps = 5;
+                const nc = 5;
+                for (let i = 0; i < nc; i++) {
+                    const ang = (Math.PI * 2 / nc) * i;
+                    ctx.save();
+                    ctx.rotate(ang);
+                    ctx.beginPath();
+                    ctx.ellipse(0, -ps, ps * 0.4, ps * 0.55, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = this.col.flower;
+                    ctx.globalAlpha = fade * 0.9;
+                    ctx.fill();
+                    ctx.restore();
+                }
+                // Merkez
+                ctx.beginPath(); ctx.arc(0, 0, ps * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = this.col.fCenter;
+                ctx.globalAlpha = fade;
+                ctx.fill();
+            } else {
+                // Yaprak
+                ctx.rotate(dec.side * 0.7);
+                ctx.beginPath();
+                ctx.ellipse(dec.side * 8, 0, 10, 5, dec.side * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = this.col.leaf;
+                ctx.globalAlpha = fade * 0.85;
+                ctx.fill();
+                ctx.strokeStyle = this.col.flower + '66';
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        ctx.restore();
+
+        if (this.life > this.maxLife) this.reset();
+    }
 }
 
 // ----------- IŞILTILAR -----------
@@ -229,27 +350,21 @@ class Sparkle {
         this.life++;
         const a = Math.sin(this.phase) * (1 - this.life / this.maxLife);
         if (a <= 0) return;
-        const s = this.size;
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.globalAlpha = a;
-
-        // Çapraz yıldız
         ctx.fillStyle = this.color;
         ctx.beginPath();
         for (let i = 0; i < 8; i++) {
-            const r = i % 2 === 0 ? s : s * 0.35;
+            const r = i % 2 === 0 ? this.size : this.size * 0.35;
             const ang = i * Math.PI / 4 + this.phase * 0.2;
             i === 0
                 ? ctx.moveTo(Math.cos(ang) * r, Math.sin(ang) * r)
                 : ctx.lineTo(Math.cos(ang) * r, Math.sin(ang) * r);
         }
         ctx.closePath(); ctx.fill();
-
-        // Merkez parlama
-        ctx.beginPath(); ctx.arc(0, 0, s * 0.3, 0, Math.PI * 2);
+        ctx.beginPath(); ctx.arc(0, 0, this.size * 0.25, 0, Math.PI * 2);
         ctx.fillStyle = '#fff'; ctx.fill();
-
         ctx.restore();
     }
     get dead() { return this.life > this.maxLife; }
@@ -259,16 +374,15 @@ class Sparkle {
 let flowers  = [];
 let sparkles = [];
 let grasses  = [];
+let ivies    = [];
 let t = 0;
 
-// Zemin otlarını oluştur
-for (let i = 0; i < 60; i++) {
-    grasses.push(new Grass(Math.random() * W));
-}
+for (let i = 0; i < 55; i++) grasses.push(new Grass(Math.random() * W));
+for (let i = 0; i < 5;  i++) ivies.push(new Ivy());
 
 function noOverlap(x) {
     for (let f of flowers) {
-        if (Math.abs(f.x - x) < 40) return false;
+        if (Math.abs(f.x - x) < 45) return false;
     }
     return true;
 }
@@ -302,11 +416,14 @@ function animate() {
     ctx.clearRect(0, 0, W, H);
     drawBg();
 
-    // Zemin otları (arka planda)
+    // Sarmaşıklar (en arkada)
+    ivies.forEach(iv => iv.draw(t));
+
+    // Zemin otları
     grasses.forEach(g => g.draw(t));
 
     // Otomatik çiçek
-    if (flowers.length < 25 && Math.random() < 0.04) {
+    if (flowers.length < 22 && Math.random() < 0.04) {
         let x = Math.random() * W;
         if (noOverlap(x)) flowers.push(new TallFlower(x, false));
     }
@@ -327,7 +444,5 @@ animate();
 window.addEventListener('resize', () => {
     resize();
     grasses = [];
-    for (let i = 0; i < 60; i++) {
-        grasses.push(new Grass(Math.random() * W));
-    }
+    for (let i = 0; i < 55; i++) grasses.push(new Grass(Math.random() * W));
 });
