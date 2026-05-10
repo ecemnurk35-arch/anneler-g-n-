@@ -154,14 +154,21 @@ class TallFlower {
                 ctx.save();
                 ctx.rotate(ang);
 
-                // Her yaprak: merkeze yakın dar, uca doğru yuvarlak elips
+               // Damla/yuvarlak yaprak şekli
+
                 ctx.beginPath();
-                ctx.ellipse(
-                    0, -ps * 0.65,   // merkez noktası (yukarı kaydır)
-                    ps * 0.38,        // x yarıçap (genişlik)
-                    ps * 0.65,        // y yarıçap (uzunluk)
-                    0, 0, Math.PI * 2
+                ctx.moveTo(0, 0);
+                ctx.bezierCurveTo(
+                    -ps * 0.5,  -ps * 0.3,
+                    -ps * 0.5,  -ps * 1.1,
+                    0,         -ps * 1.3
                 );
+                ctx.bezierCurveTo(
+                    ps * 0.5,  -ps * 1.1,
+                    ps * 0.5,  -ps * 0.3,
+                    0,          0
+                );
+                ctx.closePath();
 
                 // Yaprak gradient: içten dışa
                 const pg = ctx.createRadialGradient(0, -ps * 0.4, 0, 0, -ps * 0.65, ps * 0.7);
@@ -202,9 +209,9 @@ class TallFlower {
 
 // ----------- SARMAŞIK (yukarıdan aşağı iner, üstünde küçük çiçekler) -----------
 const IVY_COLORS = [
-    { stem: '#440022', leaf: '#660033', flower: '#ff66aa', fCenter: '#ffddee' },
-    { stem: '#330044', leaf: '#550055', flower: '#cc44ff', fCenter: '#eeccff' },
-    { stem: '#3a0015', leaf: '#5a0025', flower: '#ff3388', fCenter: '#ffbbdd' },
+    { stem: '#cc0055', leaf: '#880033', flower: '#ff66aa', fCenter: '#ffddee' },
+    { stem: '#8800cc', leaf: '#550088', flower: '#dd66ff', fCenter: '#eeccff' },
+    { stem: '#ff0066', leaf: '#aa0044', flower: '#ff88bb', fCenter: '#ffccdd' },
 ];
 
 class Ivy {
@@ -217,7 +224,7 @@ class Ivy {
         this.segments = [];
         this.maxLen = Math.random() * 180 + 120;
         this.curLen = 0;
-        this.growSpeed = Math.random() * 0.6 + 0.3;
+        this.growSpeed = Math.random() * 1.5 + 1.0;
         this.phase = Math.random() * Math.PI * 2;
         this.swayAmp = Math.random() * 18 + 10;
         this.swaySpeed = Math.random() * 0.008 + 0.003;
@@ -378,8 +385,11 @@ let ivies    = [];
 let t = 0;
 
 for (let i = 0; i < 55; i++) grasses.push(new Grass(Math.random() * W));
-for (let i = 0; i < 5;  i++) ivies.push(new Ivy());
-
+for (let i = 0; i < 8; i++) {
+    const ivy = new Ivy();
+    ivy.curLen = ivy.maxLen * 0.5; // Baştan yarı uzunlukta başlasın
+    ivies.push(ivy);
+}
 function noOverlap(x) {
     for (let f of flowers) {
         if (Math.abs(f.x - x) < 45) return false;
