@@ -25,11 +25,11 @@ canvas {
 }
 
 .card {
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(10, 0, 20, 0.65);
     backdrop-filter: blur(18px);
     border-radius: 28px;
-    border: 1.5px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 32px rgba(220, 120, 160, 0.18);
+    border: 1.5px solid rgba(180, 0, 100, 0.4);
+    box-shadow: 0 8px 32px rgba(180, 0, 120, 0.3);
     padding: 28px 36px 22px;
     text-align: center;
     pointer-events: auto;
@@ -44,14 +44,14 @@ canvas {
 }
 
 .photo-frame {
-    width: 150px;
-    height: 150px;
+    width: 200px;
+    height: 200px;
     border-radius: 50%;
-    border: 6px solid white;
-    box-shadow: 0 4px 20px rgba(220, 100, 150, 0.25);
+    border: 6px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 30px rgba(200, 0, 150, 0.4);
     overflow: hidden;
     margin: 0 auto 20px;
-    background: linear-gradient(135deg, #ffd6e7, #c8b8f8);
+    background: linear-gradient(135deg, #330022, #220033);
 }
 
 .photo-frame img {
@@ -64,15 +64,15 @@ canvas {
 h1 {
     font-family: Georgia, serif;
     font-size: 1.9rem;
-    color: #c2185b;
+    color: #ff66aa;
     font-weight: 700;
     margin-bottom: 10px;
-    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0 20px rgba(255, 100, 170, 0.6);
 }
 
 p {
     font-size: 1.1rem;
-    color: #ad1457;
+    color: #dd88cc;
     font-weight: 600;
     margin-bottom: 6px;
 }
@@ -80,7 +80,7 @@ p {
 .hint {
     display: block;
     font-size: 0.8rem;
-    color: #b06090;
+    color: #aa66bb;
     font-style: italic;
     opacity: 0.8;
     margin-top: 6px;
