@@ -1,71 +1,87 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     overflow: hidden;
-    font-family: 'Poppins', 'Trebuchet MS', sans-serif; /* Daha modern bir font */
-    /* Canlı Bahar Arka Planı */
-    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+    font-family: 'Trebuchet MS', sans-serif;
 }
 
-.main-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+}
+
+.overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     display: flex;
-    justify-content: center;
     align-items: center;
-    z-index: 20; /* Çiçeklerin önünde dursun */
-    pointer-events: none; /* Ama arkadaki çiçeğe dokunmaya engel olmasın */
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
 }
 
-.message-box {
+.card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(18px);
+    border-radius: 28px;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(220, 120, 160, 0.18);
+    padding: 28px 36px 22px;
     text-align: center;
-    color: #c2185b;
-    background: rgba(255, 255, 255, 0.7);
-    padding: 30px;
-    border-radius: 30px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-    border: 2px solid rgba(255,255,255,0.5);
-    pointer-events: auto; /* İçindekilere dokunulabilsin */
-    transform: scale(0.9); /* Mobilde sığması için hafif küçülttük */
-    animation: popIn 1s ease-out forwards;
+    pointer-events: auto;
+    animation: popIn 1.1s cubic-bezier(.23, 1.4, .5, 1) forwards;
+    max-width: 360px;
+    width: 90%;
 }
 
 @keyframes popIn {
-    0% { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(0.9); opacity: 1; }
+    0%   { transform: scale(0.4) translateY(40px); opacity: 0; }
+    100% { transform: scale(1)   translateY(0);    opacity: 1; }
 }
 
 .photo-frame {
-    width: 160px;
-    height: 160px;
-    margin: 20px auto;
-    border: 8px solid white;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
+    border: 6px solid white;
+    box-shadow: 0 4px 20px rgba(220, 100, 150, 0.25);
     overflow: hidden;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    position: relative;
-    background: #eee; /* Fotoğraf yoksa gri görünsün */
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, #ffd6e7, #c8b8f8);
 }
 
-#motherPhoto {
+.photo-frame img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
 
-h1 { font-size: 2.2rem; margin: 0; font-weight: 800; text-shadow: 1px 1px 2px rgba(255,255,255,0.5); }
-p { font-size: 1.3rem; font-weight: 600; margin: 15px 0; color: #ad1457; }
-.hint { color: #888; font-size: 0.9rem; font-style: italic; opacity: 0.8; }
+h1 {
+    font-family: Georgia, serif;
+    font-size: 1.9rem;
+    color: #c2185b;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
 
-canvas {
+p {
+    font-size: 1.1rem;
+    color: #ad1457;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.hint {
     display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
+    font-size: 0.8rem;
+    color: #b06090;
+    font-style: italic;
+    opacity: 0.8;
+    margin-top: 6px;
 }
